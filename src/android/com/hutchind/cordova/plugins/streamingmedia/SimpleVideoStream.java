@@ -1,21 +1,26 @@
 package com.hutchind.cordova.plugins.streamingmedia;
 
 import android.app.Activity;
-import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.media.MediaPlayer;
-import android.widget.MediaController;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.view.MotionEvent;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.Display;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -23,7 +28,7 @@ import android.widget.VideoView;
 
 public class SimpleVideoStream extends Activity implements
 	MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
-	MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
+	MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener{
 	private String TAG = getClass().getSimpleName();
 	private VideoView mVideoView = null;
 	private MediaPlayer mMediaPlayer = null;
@@ -31,6 +36,7 @@ public class SimpleVideoStream extends Activity implements
 	private ProgressBar mProgressBar = null;
 	private String mVideoUrl;
 	private Boolean mShouldAutoClose = true;
+	private boolean shouldSplitVertically = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +49,14 @@ public class SimpleVideoStream extends Activity implements
 		mShouldAutoClose = b.getBoolean("shouldAutoClose");
 		mShouldAutoClose = mShouldAutoClose == null ? true : mShouldAutoClose;
 
+		shouldSplitVertically = b.getBoolean("shouldSplitVertically", false);
+
 		RelativeLayout relLayout = new RelativeLayout(this);
 		relLayout.setBackgroundColor(Color.BLACK);
 		RelativeLayout.LayoutParams relLayoutParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 		relLayoutParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 		mVideoView = new VideoView(this);
+
 		mVideoView.setLayoutParams(relLayoutParam);
 		relLayout.addView(mVideoView);
 
@@ -63,9 +72,27 @@ public class SimpleVideoStream extends Activity implements
 		mProgressBar.bringToFront();
 
 		setOrientation(b.getString("orientation"));
+		if(shouldSplitVertically){
+			LinearLayout linLayout = new LinearLayout(this);
+			linLayout.setOrientation(LinearLayout.VERTICAL);
+			linLayout.addView(relLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.4F));
 
-		setContentView(relLayout, relLayoutParam);
+			WebView webView = new WebView(this);
+			webView.getSettings().setJavaScriptEnabled(true);
+			webView.getSettings().setLoadWithOverviewMode(true);
+			webView.getSettings().setUseWideViewPort(true);
+			webView.setWebViewClient(new AddWebViewClient());
+			webView.setWebChromeClient(new AddWebChromeClient());
+			webView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
+			String url = b.getString("loadUrl");
+			webView.loadUrl(url != null? url : "");
 
+			linLayout.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
+
+			setContentView(linLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+		}else{
+			setContentView(relLayout, relLayoutParam);
+		}
 		play();
 	}
 
@@ -196,5 +223,42 @@ public class SimpleVideoStream extends Activity implements
 		if (mMediaController != null)
 			mMediaController.show();
 		return false;
+	}
+
+	private class AddWebViewClient extends WebViewClient {
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			return false;
+		}
+	}
+
+	private class AddWebChromeClient extends WebChromeClient {
+
+		//display alert message in Web View
+		@Override
+		public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+			Log.d("SimpleVideoStream", message);
+			new AlertDialog.Builder(view.getContext())
+					.setMessage(message).setCancelable(true).show();
+			result.confirm();
+			return true;
+		}
+
+	}
+
+	public class JavaScriptInterface {
+		Context mContext;
+
+		// Instantiate the interface and set the context
+		JavaScriptInterface(Context c) {
+			mContext = c;
+		}
+
+		//using Javascript to call the finish activity
+		@JavascriptInterface
+		public void closeMyActivity() {
+			finish();
+		}
+
 	}
 }
