@@ -84,7 +84,7 @@ public class SimpleVideoStream extends Activity implements
 			webView.setWebViewClient(new AddWebViewClient());
 			webView.setWebChromeClient(new AddWebChromeClient());
 			webView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
-			String url = b.getString("loadUrl");
+			String url = b.getString("contentUrl");
 			webView.loadUrl(url != null? url : "");
 
 			linLayout.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
