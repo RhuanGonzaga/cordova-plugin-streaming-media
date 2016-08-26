@@ -14,12 +14,12 @@ https://opensource.org/licenses/MIT
 		xmlns="http://apache.org/cordova/ns/plugins/1.0"
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		id="me.donaldepignosis.cordova.plugins.streamingmedia.mod"
-		version="1.0.1">
+		version="1.0.4">
 
 	<name>StreamingMedia</name>
 
 	<description>
-		This plugin allows you to launch a streaming player for audio or video in either split screen mode or fullscreen mode. Works for only Android. Forked from https://github.com/nchutchind/Streaming-Media-Cordova-Plugin.git
+		This plugin allows you to launch a streaming player for audio or video in either split screen mode or fullscreen mode. Works for only Android.
 	</description>
 
 	<author>Nicholas Hutchind, Donaldson Chickeme</author>
@@ -30,7 +30,7 @@ https://opensource.org/licenses/MIT
 
 	<repo>https://github.com/donaldepignosis/cordova-plugin-streaming-media.git</repo>
 
-	<!-- <issue>https://github.com/nchutchind/Streaming-Media-Cordova-Plugin/issues</issue> -->
+	<issue>https://github.com/donaldepignosis/cordova-plugin-streaming-media/issues</issue>
 
 	<engines>
 		<engine name="cordova" version=">=3.0.0" />

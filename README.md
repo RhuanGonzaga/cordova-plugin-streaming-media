@@ -5,7 +5,6 @@ For iOS and Android, by [Donaldson Chickeme](https://github.com/donaldepignosis)
 ## Description
 
 This plugin allows you to launch a streaming player for audio or video in either split screen mode or fullscreen mode. Works for only Android.
-Forked from https://github.com/nchutchind/Streaming-Media-Cordova-Plugin.git
 
 * 1.0.0 Works with Cordova 3.x
 * 1.0.1+ Works with Cordova >= 4.0
@@ -44,6 +43,7 @@ cordova plugin add cordova-plugin-streaming-media-mod
     orientation: 'landscape'
     shouldSplitVertically: true,
     shouldAutoClose: false,
+    shouldLockOrientation: false,
     contentUrl: 'https://www.google.com'
   };
   window.plugins.streamingMedia.playVideo(videoUrl, options);
