@@ -1,14 +1,14 @@
 {
-  "name": "cordova-plugin-streaming-media",
+  "name": "cordova-plugin-streaming-media-mod",
   "version": "1.0.2",
-  "description": "This plugin allows you to stream audio and video in a fullscreen, native player on iOS and Android.",
+  "description": "This plugin allows you to launch a streaming player for audio or video in either split screen mode or fullscreen mode. Works for only Android. Forked from https://github.com/nchutchind/Streaming-Media-Cordova-Plugin.git",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nchutchind/Streaming-Media-Cordova-Plugin.git"
+    "url": "git+https://github.com/donaldepignosis/cordova-plugin-streaming-media.git"
   },
   "keywords": [
     "media",
@@ -18,7 +18,7 @@
     "cordova-android",
     "cordova-fireos"
   ],
-  "author": "Nicholas Hutchind",
+  "author": "Donaldson Epignosis",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nchutchind/Streaming-Media-Cordova-Plugin/issues"

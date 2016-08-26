@@ -1,6 +1,18 @@
-package com.hutchind.cordova.plugins.streamingmedia;
+/*
+*The MIT License (MIT)
+*Copyright (c) 2016 Donaldson Chickeme
+*
+*Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+*
+*The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*
+*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*https://opensource.org/licenses/MIT
+*/
+package me.donaldepignosis.cordova.plugins.streamingmedia.mod;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -9,7 +21,6 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,9 +45,11 @@ public class SimpleVideoStream extends Activity implements
 	private MediaPlayer mMediaPlayer = null;
 	private MediaController mMediaController = null;
 	private ProgressBar mProgressBar = null;
+	private WebView webView;
 	private String mVideoUrl;
 	private Boolean mShouldAutoClose = true;
-	private boolean shouldSplitVertically = false;
+	private boolean shouldSplitVertically;
+	private boolean shouldLockOrientation;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +63,8 @@ public class SimpleVideoStream extends Activity implements
 		mShouldAutoClose = mShouldAutoClose == null ? true : mShouldAutoClose;
 
 		shouldSplitVertically = b.getBoolean("shouldSplitVertically", false);
+
+		shouldLockOrientation = b.getBoolean("shouldLockOrientation", false);
 
 		RelativeLayout relLayout = new RelativeLayout(this);
 		relLayout.setBackgroundColor(Color.BLACK);
@@ -71,21 +86,13 @@ public class SimpleVideoStream extends Activity implements
 		relLayout.addView(mProgressBar);
 		mProgressBar.bringToFront();
 
-		setOrientation(b.getString("orientation"));
+		setOrientation(shouldLockOrientation ? null : b.getString("orientation"));
 		if(shouldSplitVertically){
 			LinearLayout linLayout = new LinearLayout(this);
 			linLayout.setOrientation(LinearLayout.VERTICAL);
 			linLayout.addView(relLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.4F));
 
-			WebView webView = new WebView(this);
-			webView.getSettings().setJavaScriptEnabled(true);
-			webView.getSettings().setLoadWithOverviewMode(true);
-			webView.getSettings().setUseWideViewPort(true);
-			webView.setWebViewClient(new AddWebViewClient());
-			webView.setWebChromeClient(new AddWebChromeClient());
-			webView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
-			String url = b.getString("contentUrl");
-			webView.loadUrl(url != null? url : "");
+			initializeWebView();
 
 			linLayout.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
 
@@ -94,6 +101,20 @@ public class SimpleVideoStream extends Activity implements
 			setContentView(relLayout, relLayoutParam);
 		}
 		play();
+	}
+
+	private void initializeWebView(){
+		webView = new WebView(this);
+		webView.getSettings().setJavaScriptEnabled(true);
+		webView.getSettings().setLoadWithOverviewMode(true);
+		webView.getSettings().setUseWideViewPort(true);
+		webView.setWebViewClient(new AddWebViewClient());
+		webView.setWebChromeClient(new AddWebChromeClient());
+		webView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
+
+		Bundle b = getIntent().getExtras();
+		String url = b != null ? b.getString("contentUrl") : "";
+		webView.loadUrl(url != null? url : "");
 	}
 
 	private void play() {
@@ -116,8 +137,10 @@ public class SimpleVideoStream extends Activity implements
 	private void setOrientation(String orientation) {
 		if ("landscape".equals(orientation)) {
 			this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			Log.d(TAG, "setting landscape");
 		}else if("portrait".equals(orientation)) {
 			this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			Log.d(TAG, "setting portrait");
 		}
 	}
 
@@ -216,6 +239,50 @@ public class SimpleVideoStream extends Activity implements
 	public void onConfigurationChanged(Configuration newConfig) {
 		// The screen size changed or the orientation changed... don't restart the activity
 		super.onConfigurationChanged(newConfig);
+		if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+			toggleFullscreen(true);
+		}else if(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+			toggleFullscreen(false);
+		}
+	}
+
+	private void toggleFullscreen(boolean toggle){
+		RelativeLayout relLayout = new RelativeLayout(this);
+		relLayout.setBackgroundColor(Color.BLACK);
+		RelativeLayout.LayoutParams relLayoutParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+		relLayoutParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+
+		if(mVideoView != null){
+			mVideoView.setLayoutParams(relLayoutParam);
+			relLayout.addView(mVideoView);
+		}
+
+		// Center the progress bar
+		RelativeLayout.LayoutParams pblp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		pblp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		if (mProgressBar != null){
+			mProgressBar.setLayoutParams(pblp);
+			// Add progress throbber to view
+			relLayout.addView(mProgressBar);
+			mProgressBar.bringToFront();
+		}
+
+		if (!toggle){
+			LinearLayout linLayout = new LinearLayout(this);
+			linLayout.setOrientation(LinearLayout.VERTICAL);
+			linLayout.addView(relLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.4F));
+
+			if (webView == null){
+				initializeWebView();
+			}
+
+			linLayout.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
+
+			setContentView(linLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+			return;
+		}
+
+		setContentView(relLayout, relLayoutParam);
 	}
 
 	@Override
