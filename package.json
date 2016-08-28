@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-streaming-media-mod",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This plugin allows you to launch a streaming player for audio or video in either split screen mode or fullscreen mode. Works for only Android.",
   "main": "index.js",
   "scripts": {

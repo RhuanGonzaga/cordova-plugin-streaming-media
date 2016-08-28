@@ -1,6 +1,6 @@
 # Cordova Streaming Media plugin
 
-For iOS and Android, by [Donaldson Chickeme](https://github.com/donaldepignosis)
+For iOS and Android, by [Nicholas Hutchind, Donaldson Chickeme](https://github.com/donaldepignosis)
 
 ## Description
 

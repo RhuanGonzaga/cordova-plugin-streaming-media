@@ -1,6 +1,6 @@
 /*
 *The MIT License (MIT)
-*Copyright (c) 2016 Donaldson Chickeme
+*Copyright (c) 2016 Nicholas Hutchind, Donaldson Chickeme
 *
 *Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 *
@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -86,7 +87,7 @@ public class SimpleVideoStream extends Activity implements
 		relLayout.addView(mProgressBar);
 		mProgressBar.bringToFront();
 
-		setOrientation(shouldLockOrientation ? null : b.getString("orientation"));
+		setOrientation(shouldLockOrientation ? b.getString("orientation") : null);
 		if(shouldSplitVertically){
 			LinearLayout linLayout = new LinearLayout(this);
 			linLayout.setOrientation(LinearLayout.VERTICAL);
@@ -239,50 +240,31 @@ public class SimpleVideoStream extends Activity implements
 	public void onConfigurationChanged(Configuration newConfig) {
 		// The screen size changed or the orientation changed... don't restart the activity
 		super.onConfigurationChanged(newConfig);
-		if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
-			toggleFullscreen(true);
-		}else if(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-			toggleFullscreen(false);
+		if (shouldSplitVertically){
+			if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+				toggleFullscreen(true);
+			}else if(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+				toggleFullscreen(false);
+			}
 		}
 	}
 
 	private void toggleFullscreen(boolean toggle){
-		RelativeLayout relLayout = new RelativeLayout(this);
-		relLayout.setBackgroundColor(Color.BLACK);
-		RelativeLayout.LayoutParams relLayoutParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-		relLayoutParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-
-		if(mVideoView != null){
-			mVideoView.setLayoutParams(relLayoutParam);
-			relLayout.addView(mVideoView);
-		}
-
-		// Center the progress bar
-		RelativeLayout.LayoutParams pblp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		pblp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-		if (mProgressBar != null){
-			mProgressBar.setLayoutParams(pblp);
-			// Add progress throbber to view
-			relLayout.addView(mProgressBar);
-			mProgressBar.bringToFront();
+		if(mVideoView != null) {
+			((ViewGroup) mVideoView.getParent()).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 		}
 
 		if (!toggle){
-			LinearLayout linLayout = new LinearLayout(this);
-			linLayout.setOrientation(LinearLayout.VERTICAL);
-			linLayout.addView(relLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.4F));
+			if(mVideoView != null) {
+				((ViewGroup) mVideoView.getParent()).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.4F));
+			}
 
 			if (webView == null){
 				initializeWebView();
 			}
 
-			linLayout.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
-
-			setContentView(linLayout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-			return;
+			webView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.6F));
 		}
-
-		setContentView(relLayout, relLayoutParam);
 	}
 
 	@Override
