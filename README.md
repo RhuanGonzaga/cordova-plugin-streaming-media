@@ -1,6 +1,6 @@
 # Cordova Streaming Media plugin
 
-For iOS and Android, by [Nicholas Hutchind, Donaldson Chickeme](https://github.com/donaldepignosis)
+For iOS and Android, by [Nicholas Hutchind](https://github.com/nchutchind), [Donaldson Chickeme](https://github.com/donaldepignosis)
 
 ## Description
 
@@ -43,7 +43,6 @@ cordova plugin add cordova-plugin-streaming-media-mod
     orientation: 'landscape'
     shouldSplitVertically: true,
     shouldAutoClose: false,
-    shouldLockOrientation: false,
     contentUrl: 'https://www.google.com'
   };
   window.plugins.streamingMedia.playVideo(videoUrl, options);
