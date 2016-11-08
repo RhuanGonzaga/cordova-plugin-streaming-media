@@ -40,7 +40,7 @@ cordova plugin add cordova-plugin-streaming-media-mod
     errorCallback: function(errMsg) {
       console.log("Error! " + errMsg);
     },
-    orientation: 'landscape'
+    orientation: 'landscape',
     shouldSplitVertically: true,
     shouldAutoClose: false,
     contentUrl: 'https://www.google.com'
